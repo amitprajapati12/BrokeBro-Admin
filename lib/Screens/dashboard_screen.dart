@@ -1,25 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'admin_login_page.dart';
-
-void main() {
-  runApp(const AdminPanelApp());
-}
-
-// Main App
-class AdminPanelApp extends StatelessWidget {
-  const AdminPanelApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Admin Panel',
-      theme: ThemeData(primarySwatch: Colors.orange),
-      home: const MainScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
+import 'student_id_verification.dart';
+import 'internship_approval.dart';
+import 'offer_approval.dart';
+import 'event_approval.dart';
 
 // Student Model
 class Student {
@@ -38,15 +23,14 @@ class Student {
   });
 }
 
-// Main Screen
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
   final List<Student> students = [
@@ -82,12 +66,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            _selectedIndex == 0
-                ? 'Dashboard Overview'
-                : _selectedIndex == 3
-                ? 'Student ID Verification'
-                : 'Admin Panel'),
+        title: Text(_getTitle()),
         backgroundColor: Colors.orange,
         actions: [
           IconButton(
@@ -122,6 +101,23 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  String _getTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Dashboard Overview';
+      case 1:
+        return 'Internship Verification';
+      case 2:
+        return 'Offer Verification';
+      case 3:
+        return 'Student ID Verification';
+      case 4:
+        return 'Event Approval';
+      default:
+        return 'Admin Panel';
+    }
+  }
+
   Widget _buildSideNav() {
     return NavigationRail(
       selectedIndex: _selectedIndex,
@@ -137,6 +133,8 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.card_travel), label: Text('Offer Verification')),
         NavigationRailDestination(
             icon: Icon(Icons.badge), label: Text('Student ID Verification')),
+        NavigationRailDestination(
+            icon: Icon(Icons.event), label: Text('Event Approval')),
       ],
     );
   }
@@ -145,27 +143,25 @@ class _MainScreenState extends State<MainScreen> {
     return ListView(
       children: [
         const DrawerHeader(
+          decoration: BoxDecoration(color: Colors.orange),
           child: Text('Admin Panel',
               style: TextStyle(fontSize: 20, color: Colors.white)),
-          decoration: BoxDecoration(color: Colors.orange),
         ),
-        ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () => setState(() => _selectedIndex = 0)),
-        ListTile(
-            leading: const Icon(Icons.work_outline),
-            title: const Text('Internship Verification'),
-            onTap: () => setState(() => _selectedIndex = 1)),
-        ListTile(
-            leading: const Icon(Icons.local_offer),
-            title: const Text('Offer Verification'),
-            onTap: () => setState(() => _selectedIndex = 2)),
-        ListTile(
-            leading: const Icon(Icons.badge),
-            title: const Text('Student ID Verification'),
-            onTap: () => setState(() => _selectedIndex = 3)),
+        _buildDrawerTile(Icons.dashboard, 'Dashboard', 0),
+        _buildDrawerTile(Icons.work_outline, 'Internship Verification', 1),
+        _buildDrawerTile(Icons.card_travel, 'Offer Verification', 2),
+        _buildDrawerTile(Icons.badge, 'Student ID Verification', 3),
+        _buildDrawerTile(Icons.event, 'Event Approval', 4),
       ],
+    );
+  }
+
+  ListTile _buildDrawerTile(IconData icon, String title, int index) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      selected: _selectedIndex == index,
+      onTap: () => setState(() => _selectedIndex = index),
     );
   }
 
@@ -173,12 +169,18 @@ class _MainScreenState extends State<MainScreen> {
     switch (_selectedIndex) {
       case 0:
         return _buildDashboard();
+      case 1:
+        return const InternshipApprovalScreen();
+      case 2:
+        return const OfferApprovalScreen();
       case 3:
-        return StudentIdVerification(
+        return StudentIdVerificationScreen(
           students: students,
           onView: _showStudentDialog,
           onApprove: _approveStudent,
         );
+      case 4:
+        return const EventApprovalScreen();
       default:
         return const Center(child: Text('Section not implemented yet'));
     }
@@ -189,17 +191,16 @@ class _MainScreenState extends State<MainScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
               _buildStatCard('Pending Internships', '24', Icons.work,
                   Colors.orange),
-              const SizedBox(width: 12),
               _buildStatCard('Pending Offers', '18', Icons.card_travel,
                   Colors.purple),
-              const SizedBox(width: 12),
               _buildStatCard('Pending ID Cards', '31', Icons.badge,
                   Colors.green),
-              const SizedBox(width: 12),
               _buildStatCard(
                   'Verified Today', '12', Icons.verified, Colors.blue),
             ],
@@ -225,8 +226,8 @@ class _MainScreenState extends State<MainScreen> {
                     itemBuilder: (context, idx) {
                       return ListTile(
                         leading: const CircleAvatar(
-                            child: Icon(Icons.check, color: Colors.white),
-                            backgroundColor: Colors.lightBlue),
+                            backgroundColor: Colors.lightBlue,
+                            child: Icon(Icons.check, color: Colors.white)),
                         title: const Text('Verified internship for John Doe'),
                         subtitle: const Text('2 minutes ago'),
                         trailing: Chip(
@@ -245,11 +246,11 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Stat Card Widget
   Widget _buildStatCard(String title, String count, IconData icon, Color color) {
-    return Expanded(
+    return SizedBox(
+      width: 220,
       child: Card(
-        color: color.withOpacity(0.1),
+        color: color.withAlpha((0.1 * 255).round()),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -258,7 +259,8 @@ class _MainScreenState extends State<MainScreen> {
               Icon(icon, color: color, size: 30),
               const SizedBox(height: 8),
               Text(count,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               Text(title, textAlign: TextAlign.center),
             ],
@@ -268,7 +270,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Show Student Dialog
   void _showStudentDialog(Student student) {
     showDialog(
       context: context,
@@ -286,54 +287,9 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Approve Student
   void _approveStudent(Student student) {
     setState(() {
       student.status = 'Approved';
     });
-  }
-}
-
-// Student ID Verification Widget
-class StudentIdVerification extends StatelessWidget {
-  final List<Student> students;
-  final Function(Student) onView;
-  final Function(Student) onApprove;
-
-  const StudentIdVerification({
-    super.key,
-    required this.students,
-    required this.onView,
-    required this.onApprove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: students.length,
-      itemBuilder: (context, index) {
-        final student = students[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: ListTile(
-            title: Text(student.name),
-            subtitle: Text('${student.course} - ${student.university}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.visibility),
-                  onPressed: () => onView(student),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.check),
-                  onPressed: () => onApprove(student),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 }

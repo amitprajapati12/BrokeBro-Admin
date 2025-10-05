@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'Screens/admin_login_page.dart';
-import 'Screens/main_screen.dart';
+import 'Screens/dashboard_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,7 +75,7 @@ class AuthGate extends StatelessWidget {
         }
 
         // If logged in -> show main screen
-        return const MainScreen();
+        return const DashboardScreen();
       },
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'main_screen.dart';
+import 'dashboard_screen.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -58,7 +58,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -98,7 +98,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha((0.1 * 255).round()), // 0.1 opacity → 26
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -110,7 +110,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.shield_outlined, size: 40, color: Colors.orange),
+                  Image.asset("assets/images/bblogo.png",height: 120,),
                   const SizedBox(height: 12),
                   const Text('BrokeBro', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 6),
