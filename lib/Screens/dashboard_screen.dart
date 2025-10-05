@@ -191,19 +191,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _buildStatCard('Pending Internships', '24', Icons.work,
-                  Colors.orange),
-              _buildStatCard('Pending Offers', '18', Icons.card_travel,
-                  Colors.purple),
-              _buildStatCard('Pending ID Cards', '31', Icons.badge,
-                  Colors.green),
-              _buildStatCard(
-                  'Verified Today', '12', Icons.verified, Colors.blue),
-            ],
+          Card(
+            elevation: 5,
+            color: Colors.orange.shade100,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.work, color: Colors.orange,),
+                title: Text("Pending Internship"),
+                trailing: Text("24",style: TextStyle(fontSize: 16),),
+              ),
+            ),
+          ),
+
+          Card(
+            elevation: 5,
+            color: Colors.purple.shade100,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.card_travel, color: Colors.purple,),
+                title: Text("Pending Offer"),
+                trailing: Text("18",style: TextStyle(fontSize: 16),),
+              ),
+            ),
+          ),
+
+          Card(
+            elevation: 5,
+            color: Colors.green.shade100,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.badge, color: Colors.green,),
+                title: Text("Pending ID Cards"),
+                trailing: Text("31",style: TextStyle(fontSize: 16),),
+              ),
+            ),
+          ),
+
+          Card(
+            elevation: 5,
+            color: Colors.blue.shade100,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                leading: Icon(Icons.verified, color: Colors.blue,),
+                title: Text("Verified Today"),
+                trailing: Text("12", style: TextStyle(fontSize: 16),),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           Card(
@@ -246,29 +283,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String count, IconData icon, Color color) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        color: color.withAlpha((0.1 * 255).round()),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 30),
-              const SizedBox(height: 8),
-              Text(count,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(title, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showStudentDialog(Student student) {
     showDialog(
