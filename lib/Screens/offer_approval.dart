@@ -194,7 +194,8 @@ class _OfferApprovalScreenState extends State<OfferApprovalScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offer Approval Panel'),
+        toolbarHeight: 28,
+        title: const Text('Offer Approval Panel',style: TextStyle(fontSize: 21),),
         backgroundColor: Colors.orange,
         bottom: TabBar(
           controller: _tabController,

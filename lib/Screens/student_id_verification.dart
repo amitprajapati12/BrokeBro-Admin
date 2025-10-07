@@ -15,7 +15,8 @@ class StudentIdVerificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return
+      ListView.builder(
       itemCount: students.length,
       itemBuilder: (context, index) {
         final student = students[index];

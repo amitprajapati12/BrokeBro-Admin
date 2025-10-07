@@ -64,7 +64,7 @@ class InternshipApprovalScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Internship Approvals'),
+        title: const Text('Internship Approvals',style: TextStyle(fontSize: 21),),
         backgroundColor: Colors.orange,
       ),
       body: StreamBuilder<QuerySnapshot>(

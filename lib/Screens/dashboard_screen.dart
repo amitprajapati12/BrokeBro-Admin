@@ -1,3 +1,4 @@
+import 'package:brokebro_admin/Screens/verified_today.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'admin_login_page.dart';
@@ -197,6 +198,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ListTile(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => InternshipApprovalScreen(),));
+                },
                 leading: Icon(Icons.work, color: Colors.orange,),
                 title: Text("Pending Internship"),
                 trailing: Text("24",style: TextStyle(fontSize: 16),),
@@ -210,6 +214,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ListTile(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => OfferApprovalScreen(),));
+                },
                 leading: Icon(Icons.card_travel, color: Colors.purple,),
                 title: Text("Pending Offer"),
                 trailing: Text("18",style: TextStyle(fontSize: 16),),
@@ -236,6 +243,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: ListTile(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => VerifiedScreen(),));
+                },
                 leading: Icon(Icons.verified, color: Colors.blue,),
                 title: Text("Verified Today"),
                 trailing: Text("12", style: TextStyle(fontSize: 16),),
