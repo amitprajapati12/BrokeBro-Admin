@@ -1,6 +1,7 @@
 import 'package:brokebro_admin/Screens/verified_today.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'admin_login_page.dart';
 import 'student_id_verification.dart';
 import 'internship_approval.dart';
@@ -192,67 +193,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Pending Internship
           Card(
             elevation: 5,
             color: Colors.orange.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => InternshipApprovalScreen(),));
-                },
-                leading: Icon(Icons.work, color: Colors.orange,),
-                title: Text("Pending Internship"),
-                trailing: Text("24",style: TextStyle(fontSize: 16),),
-              ),
+            child: ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const InternshipApprovalScreen()),
+                );
+              },
+              leading: Icon(Icons.work, color: Colors.orange),
+              title: const Text("Pending Internship"),
+              trailing: const Text("24", style: TextStyle(fontSize: 16)),
             ),
           ),
 
+          // Pending Offer (dynamic count)
           Card(
             elevation: 5,
             color: Colors.purple.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => OfferApprovalScreen(),));
-                },
-                leading: Icon(Icons.card_travel, color: Colors.purple,),
-                title: Text("Pending Offer"),
-                trailing: Text("18",style: TextStyle(fontSize: 16),),
-              ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('offers')
+                  .where('verificationStatus', isEqualTo: 'pending')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                return ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const OfferApprovalScreen()),
+                    );
+                  },
+                  leading: Icon(Icons.card_travel, color: Colors.purple),
+                  title: const Text("Pending Offer"),
+                  trailing: Text("$count", style: const TextStyle(fontSize: 16)),
+                );
+              },
             ),
           ),
 
+          // Pending ID Cards (static)
           Card(
             elevation: 5,
             color: Colors.green.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Icon(Icons.badge, color: Colors.green,),
-                title: Text("Pending ID Cards"),
-                trailing: Text("31",style: TextStyle(fontSize: 16),),
-              ),
+            child: const ListTile(
+              leading: Icon(Icons.badge, color: Colors.green),
+              title: Text("Pending ID Cards"),
+              trailing: Text("31", style: TextStyle(fontSize: 16)),
             ),
           ),
 
+          // Verified Today (dynamic)
           Card(
             elevation: 5,
             color: Colors.blue.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListTile(
-                onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => VerifiedScreen(),));
-                },
-                leading: Icon(Icons.verified, color: Colors.blue,),
-                title: Text("Verified Today"),
-                trailing: Text("12", style: TextStyle(fontSize: 16),),
-              ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('activityLog')
+                  .where('action', isEqualTo: 'approved')
+                  .where('timestamp',
+                  isGreaterThan: Timestamp.fromDate(
+                      DateTime.now().subtract(const Duration(days: 1))))
+                  .snapshots(),
+              builder: (context, snapshot) {
+                int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                return ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>  VerifiedScreen()),
+                    );
+                  },
+                  leading: Icon(Icons.verified, color: Colors.blue),
+                  title: const Text("Verified Today"),
+                  trailing: Text("$count", style: const TextStyle(fontSize: 16)),
+                );
+              },
             ),
           ),
+
           const SizedBox(height: 24),
+
+          // Recent Verification Activities
           Card(
             shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -265,22 +294,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text('Recent Verification Activities',
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 5,
-                    separatorBuilder: (_, __) => const Divider(height: 12),
-                    itemBuilder: (context, idx) {
-                      return ListTile(
-                        leading: const CircleAvatar(
-                            backgroundColor: Colors.lightBlue,
-                            child: Icon(Icons.check, color: Colors.white)),
-                        title: const Text('Verified internship for John Doe'),
-                        subtitle: const Text('2 minutes ago'),
-                        trailing: Chip(
-                          label: const Text('Approved'),
-                          backgroundColor: Colors.green.shade100,
-                        ),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('activityLog')
+                        .orderBy('timestamp', descending: true)
+                        .limit(5)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(
+                            child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(
+                            child: Text('No recent activities.'));
+                      }
+
+                      final activities = snapshot.data!.docs;
+
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: activities.length,
+                        separatorBuilder: (_, __) =>
+                        const Divider(height: 12),
+                        itemBuilder: (context, index) {
+                          final activity = activities[index].data()
+                          as Map<String, dynamic>;
+                          final action = activity['action'] ?? 'Updated';
+                          final user = activity['user'] ?? 'Unknown';
+                          final type = activity['type'] ?? 'Item';
+                          final timestamp = activity['timestamp'] != null
+                              ? (activity['timestamp'] as Timestamp).toDate()
+                              : DateTime.now();
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                                backgroundColor: Colors.lightBlue,
+                                child: const Icon(Icons.check,
+                                    color: Colors.white)),
+                            title: Text('$action $type for $user'),
+                            subtitle: Text(
+                                '${timestamp.toLocal().toString().split('.')[0]}'),
+                            trailing: Chip(
+                              label: Text(
+                                action.toLowerCase() == 'approved'
+                                    ? 'Approved'
+                                    : 'Updated',
+                              ),
+                              backgroundColor:
+                              action.toLowerCase() == 'approved'
+                                  ? Colors.green.shade100
+                                  : Colors.orange.shade100,
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -292,7 +361,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
 
   void _showStudentDialog(Student student) {
     showDialog(
